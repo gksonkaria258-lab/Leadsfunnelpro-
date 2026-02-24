@@ -194,16 +194,32 @@ const supabaseClient = supabase.createClient(
 
 async function signup(){
 
-await supabaseClient.auth.signUp({
+const {data,error} = await supabaseClient.auth.signUp({
 
-email:email.value,
-password:password.value
+email:signupEmail.value,
+password:signupPassword.value
 
 });
 
-alert("Signup success");
+if(error){
+
+alert(error.message);
+
+}else{
+
+// auto login
+await supabaseClient.auth.signInWithPassword({
+
+email:signupEmail.value,
+password:signupPassword.value
+
+});
+
+window.location.href="/dashboard.html";
 
 }
+
+  }
 
 
 async function login(){
@@ -325,4 +341,5 @@ list.innerHTML=html;
 </body>
 
 </html>
+
 
