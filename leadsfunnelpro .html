@@ -1,0 +1,326 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>leadsfunnelPro</title>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+
+<style>
+
+body{
+margin:0;
+font-family:system-ui;
+background:#0f172a;
+color:white;
+}
+
+.center{
+display:flex;
+justify-content:center;
+align-items:center;
+height:100vh;
+}
+
+.box{
+background:#1e293b;
+padding:20px;
+border-radius:10px;
+width:300px;
+}
+
+input{
+width:100%;
+padding:10px;
+margin:5px 0;
+border:none;
+border-radius:5px;
+}
+
+button{
+width:100%;
+padding:10px;
+margin-top:10px;
+border:none;
+border-radius:5px;
+background:#38bdf8;
+color:black;
+font-weight:bold;
+}
+
+.dashboard{
+display:none;
+}
+
+.sidebar{
+width:200px;
+background:#020617;
+height:100vh;
+position:fixed;
+padding:15px;
+}
+
+.main{
+margin-left:220px;
+padding:20px;
+}
+
+.card{
+background:#1e293b;
+padding:15px;
+border-radius:10px;
+margin-bottom:10px;
+}
+
+table{
+width:100%;
+border-collapse:collapse;
+}
+
+td,th{
+padding:10px;
+border-bottom:1px solid gray;
+}
+
+.call{
+background:green;
+color:white;
+padding:5px;
+}
+
+.whatsapp{
+background:#22c55e;
+color:white;
+padding:5px;
+}
+
+.delete{
+background:red;
+color:white;
+padding:5px;
+}
+
+.logout{
+background:orange;
+color:black;
+padding:10px;
+}
+
+</style>
+
+</head>
+<body>
+
+<div id="login" class="center">
+
+<div class="box">
+
+<h3>CRM Login</h3>
+
+<input id="email" placeholder="Email">
+<input id="password" type="password" placeholder="Password">
+
+<button onclick="signup()">Signup</button>
+<button onclick="login()">Login</button>
+
+</div>
+
+</div>
+
+
+<div id="dashboard" class="dashboard">
+
+<div class="sidebar">
+
+<h3>CRM</h3>
+
+<button class="logout" onclick="logout()">Logout</button>
+
+</div>
+
+<div class="main">
+
+<div class="card">
+
+<h3>Total Leads: <span id="total">0</span></h3>
+
+</div>
+
+
+<div class="card">
+
+<h3>Add Lead</h3>
+
+<input id="name" placeholder="Name">
+<input id="phone" placeholder="Phone">
+<input id="status" placeholder="Status">
+
+<button onclick="addLead()">Add</button>
+
+</div>
+
+
+<div class="card">
+
+<table>
+
+<thead>
+
+<tr>
+<th>Name</th>
+<th>Phone</th>
+<th>Action</th>
+</tr>
+
+</thead>
+
+<tbody id="list"></tbody>
+
+</table>
+
+</div>
+
+</div>
+
+</div>
+
+
+<script>
+
+const supabaseClient = supabase.createClient(
+"https://yqvnpuzketsjfbjqfnfb.supabase.co",
+"sb_publishable_tK8B2cY6JN-uiHxWM87Tmw_B8XQJlAs"
+);
+
+
+async function signup(){
+
+await supabaseClient.auth.signUp({
+
+email:email.value,
+password:password.value
+
+});
+
+alert("Signup success");
+
+}
+
+
+async function login(){
+
+const {data,error} = await supabaseClient.auth.signInWithPassword({
+
+email:email.value,
+password:password.value
+
+});
+
+if(data){
+
+login.style.display="none";
+dashboard.style.display="block";
+
+loadLeads();
+
+}
+
+}
+
+
+async function logout(){
+
+await supabaseClient.auth.signOut();
+
+location.reload();
+
+}
+
+
+async function addLead(){
+
+await supabaseClient
+
+.from("leads")
+
+.insert([{
+
+name:name.value,
+phone:phone.value,
+status:status.value
+
+}]);
+
+loadLeads();
+
+}
+
+
+async function deleteLead(id){
+
+await supabaseClient
+
+.from("leads")
+
+.delete()
+
+.eq("id",id);
+
+loadLeads();
+
+}
+
+
+async function loadLeads(){
+
+const {data} = await supabaseClient
+
+.from("leads")
+
+.select("*")
+
+.order("id",{ascending:false});
+
+total.innerText=data.length;
+
+let html="";
+
+data.forEach(l=>{
+
+html+=`
+
+<tr>
+
+<td>${l.name}</td>
+
+<td>${l.phone}</td>
+
+<td>
+
+<a href="tel:${l.phone}">
+<button class="call">Call</button>
+</a>
+
+<a href="https://wa.me/91${l.phone}" target="_blank">
+<button class="whatsapp">WhatsApp</button>
+</a>
+
+<button class="delete" onclick="deleteLead(${l.id})">
+Delete
+</button>
+
+</td>
+
+</tr>
+
+`;
+
+});
+
+list.innerHTML=html;
+
+}
+
+</script>
+
+</body>
+</html>
